@@ -23,20 +23,38 @@ access_token = get_spotify_token()
 headers = {"Authorization": f"Bearer {access_token}"}
 
 # ARTIST SEARCH
-artist_name = input("Enter an artist name: ")
-search_url = f"https://api.spotify.com/v1/search?q={artist_name}&type=artist&limit=1"
-params = {"q": artist_name, "type": "artist", "limit": 1}
+while True:
+    artist_name = input("Enter an artist name: ").lower()
+    print("")
+    search_url = f"https://api.spotify.com/v1/search?q={artist_name}&type=artist&limit=1"
+    params = {"q": artist_name, "type": "artist", "limit": 1}
 
-search_response = requests.get(search_url, headers=headers, params=params)
-artist_data = search_response.json()
+    search_response = requests.get(search_url, headers=headers, params=params)
+    artist_data = search_response.json()
+    # print(artist_data)
 
-# Extract Fields
-artist = artist_data["artists"]["items"][0]
-artist_id = artist["id"]
-artist_name = artist["name"]
-artist_url = artist["external_urls"]["spotify"]
+    # Extract Fields
+    artist = artist_data["artists"]["items"][0]
 
-print("🎵 Artist:", artist_name)
-print("🆔 ID:", artist_id)
-print("🔗 URL:", artist_url)
+    artist_id = artist["id"]
+    artist_name = artist["name"]
+    artist_url = artist["external_urls"]["spotify"]
+    artist_genres = artist["genres"]
+    artist_followers = artist["followers"]["total"]
+
+    # Print results
+    print("🎵 Artist:", artist_name)
+    print("👥 Followers:", artist_followers)
+
+    print("💿 Genres:", ", ".join(artist_genres))
+    print("")
+    # print("🆔 ID:", artist_id)
+    print("🔗 URL:", artist_url)
+    print("")
+
+    choice = input("Search for another artist? (y/n): ")
+    print("")
+
+    if choice == "n":
+        break
 
