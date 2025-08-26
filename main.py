@@ -25,58 +25,26 @@ def get_spotify_token():
 access_token = get_spotify_token()
 headers = {"Authorization": f"Bearer {access_token}"}
 
-##### MASTER PLAN #####
-
-# searched_artists = []
-
-# ask user to search for artist
-# increment search_counter
-
-# ask user if they want to generate PDF chart of top tracks' stats
-# if y:
-#   add artist to searched_artists list
-#   parse track stats
-#   create PDF / export
-# if n:
-#   if search_counter >= 2
-#       ask user: "Create a PDF comparing top tracks of your searched artists?"
-#   break
-
-
-
-# continue while loop
-
-
-
-# main_prompt = input("Enter an option (search/report) ")
-
-
-# ARTIST SEARCH
-
 search_counter = 0
-
-# if search_counter >= 2:
-#     search_choice = input(f"Search for an artist or compare top tracks of "
-#                           f"{search_counter} searched artists? (artist/compare)").lower
 
 def search_artist():
     while True:
         artist_name = input("Enter an artist name: ").lower()
-
         print("")
+
         search_url = f"https://api.spotify.com/v1/search?q={artist_name}&type=artist&limit=1"
         params = {"q": artist_name, "type": "artist", "limit": 1}
         search_response = requests.get(search_url, headers=headers, params=params)
         artist_data = search_response.json()
         # print(artist_data)
 
-        # Extract Fields
-        artist = artist_data["artists"]["items"][0]
-
         # Invalid artist search check
         if not artist_data["artists"]["items"]:  # no results
             print("No match found, try again.\n")
             continue
+
+        # Extract first artist
+        artist = artist_data["artists"]["items"][0]
 
         artist_id = artist["id"]
         artist_name = artist["name"]
@@ -87,29 +55,22 @@ def search_artist():
         # Print results
         print("🎵 Artist:", artist_name)
         print("👥 Followers:", artist_followers)
-
         print("💿 Genres:", ", ".join(artist_genres))
         print("")
-        # print("🆔 ID:", artist_id)
         print("🔗 URL:", artist_url)
         print("")
 
-        choice2 = input("Search for another artist? (y/n): ")
-        print("")
-
-        return artist_name, artist_id
-
-        if choice2 == "n":
-            return
-
-# TOP TRACKS
+        choice = input("Use this artist? (y/n): ")
+        if choice.lower() == "y":
+            return artist_id, artist_name
 
 
-def top_track_report():
+# TOP TRACK REPORT
+def artist_track_report(artist_id, artist_name):
     choice1 = input("Would you like to see their top tracks printed as a PDF? (y/n): ")
     if choice1 == "y":
         top_tracks_url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks"
-        response = requests.get(top_tracks_url, headers=headers, params={"Market": "US"})
+        response = requests.get(top_tracks_url, headers=headers, params={"market": "US"})
         tracks = response.json()["tracks"]
 
         # Create table of top track stats
@@ -144,7 +105,38 @@ def top_track_report():
             pdf.cell(30, 10, str(row["Duration"]) + " min", border=1, ln=True)
 
         # loop through df rows and add to PDF table
-        pdf.output(f"top_tracks_{artist_name}.pdf")
+        safe_name = artist_name.replace(" ", "_")
+        pdf.output(f"top_tracks_{safe_name}.pdf")
+
+
+##### MASTER PLAN #####
+
+# searched_artists = []
+
+# ask user to search for artist
+# increment search_counter
+
+# ask user if they want to generate PDF chart of top tracks' stats
+# if y:
+#   add artist to searched_artists list
+#   parse track stats
+#   create PDF / export
+# if n:
+#   if search_counter >= 2
+#       ask user: "Create a PDF comparing top tracks of your searched artists?"
+#   break
+
+# continue while loop
+
+# main_prompt = input("Enter an option (search/report) ")
+
+# ARTIST SEARCH
+
+
+# if search_counter >= 2:
+#     search_choice = input(f"Search for an artist or compare top tracks of "
+#                           f"{search_counter} searched artists? (artist/compare)").lower
+
 
 
 
