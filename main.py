@@ -106,6 +106,33 @@ def artist_track_report(artist_id, artist_name):
     pdf.output(f"top_tracks_{safe_name}.pdf")
 
 
+def generate_comparison_report(searched_artists):
+
+    rows = []
+
+    for artist in searched_artists:
+        artist_id = artist["id"]
+
+        # Call Spotify API for artist profile
+        url = f"https://api.spotify.com/v1/artists/{artist_id}"
+        response = requests.get(url, headers=headers)
+        data = response.json()
+
+        # Extract fields
+        name = data["name"]
+        followers = data["followers"]["total"]
+        popularity = data["popularity"]
+
+        # Add to rows
+        rows.append({
+            "artist": name,
+            "Followers:": followers,
+            "Popularity": popularity
+        })
+
+    # Put rows into data DataFrame
+
+
 def main():
     searched_artists = []
     search_counter = 0
@@ -127,7 +154,7 @@ def main():
 
         # 4. Offer comparison of 2+ artists
         if search_counter >= 2:
-            choice3 = input(f"Compare top tracks of your {search_counter} searched artists? (y/n): ").lower
+            choice3 = input(f"Compare top tracks of your {search_counter} searched artists? (y/n): ").lower()
             if choice3 == "y":
                 generate_comparison_report(searched_artists)
                 break
