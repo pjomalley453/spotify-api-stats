@@ -53,8 +53,13 @@ def search_artist():
 
         # Print results
         print("🎵 Artist:", artist_name)
-        print("👥 Followers:", artist_followers)
-        print("💿 Genres:", ", ".join(artist_genres))
+        print("👥 Followers:", f"{artist_followers:,}")
+
+        if not artist_genres:
+            print("💿 Genres: N/A")
+        else:
+            print("💿 Genres:", ", ".join(artist_genres))
+
         print("")
         print("🔗 URL:", artist_url)
         print("")
@@ -122,15 +127,38 @@ def generate_comparison_report(searched_artists):
         name = data["name"]
         followers = data["followers"]["total"]
         popularity = data["popularity"]
+        genres = data["genres"]
 
         # Add to rows
         rows.append({
-            "artist": name,
-            "Followers:": followers,
-            "Popularity": popularity
+            "Artist": name,
+            "Followers": f"{followers:,}",
+            "Popularity": popularity,
+            "Genres": ", ".join([g.title() for g in genres])  if genres else "N/A"
         })
 
     # Put rows into data DataFrame
+    df = pd.DataFrame(rows)
+
+    # Create PDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, "Comparison of Searched Artists", ln=True, align="C")
+
+    pdf.set_font("Arial", size=10)
+    pdf.cell(50, 10, "Artist", border=1)
+    pdf.cell(40, 10, "Followers", border=1)
+    pdf.cell(30, 10, "Popularity", border=1)
+    pdf.cell(70, 10, "Genres", border=1, ln=True)
+
+    for _, row in df.iterrows():
+        pdf.cell(50, 10, row["Artist"][:20], border=1)  # truncate at 20 chars
+        pdf.cell(40, 10, str(row["Followers"]), border=1)
+        pdf.cell(30, 10, str(row["Popularity"]), border=1)
+        pdf.cell(70, 10, row["Genres"][:35], border=1, ln=True)  # truncate at 35 chars
+
+    pdf.output("artist_comparison_report.pdf")
 
 
 def main():
