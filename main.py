@@ -82,7 +82,7 @@ def artist_track_report(artist_id, artist_name):
         })
     df = pd.DataFrame(rows)
 
-    # Create PDF of stats table
+    # Create PDF of stats
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
@@ -164,14 +164,13 @@ def generate_comparison_report(searched_artists):
 
     pdf.output("artist_comparison_report.pdf")
 
-# i want to change the logic in main() so that the user can always have the option for (search/report/quit)
 
 def main():
     searched_artists = []
 
     while True:
         print("")
-        user_prompt = input("Choose an option: (search/compare/saved/delete/quit) ").lower()
+        user_prompt = input("Choose an option: (search/report/saved/delete/quit) ").lower()
 
         # 1. Search for artist
         if user_prompt == "search":
@@ -186,22 +185,34 @@ def main():
                 else:
                     print(f"{artist_name} is already in your saved searches.\n")
 
-            # Artist top tracks report
-            choice2 = input("Would you like to see their top tracks printed as a PDF? (y/n): ").lower()
-            if choice2 == "y":
-                artist_track_report(artist_id, artist_name)
+        # 2. Create report
+        elif user_prompt == "report":
+            report_choice = input("Create individual artist report or comparison report?: (1/2)")
 
-        # 3. Comparison report
-        elif user_prompt == "compare":
-            if len(searched_artists) >= 2:
-                choice2 = input(f"Create comparison PDF of your {len(searched_artists)} searched artists? (y/n): ").lower()
-                if choice2 == "y":
+            # Individual artist report
+            if report_choice == "1":
+                if not searched_artists:
+                    print("No artists saved yet.")
+                else:
+                    for item in searched_artists:
+                        print(item["name"])
+
+                    name = input("Type the artist name: ").strip().lower()
+                    match = next((a for a in searched_artists if a["name"].lower() == name), None)
+
+                    if not match:
+                        print("Artist not in saved searches.")
+                    else:
+                        artist_track_report(searched_artists[0]["id"][name], searched_artists[0]["name"][name])
+
+            # Comparison artist report
+            elif report_choice == "2":
+                if len(searched_artists) < 2:
+                    print("You need at least two artists saved to generate a comparison report.")
+                else:
                     generate_comparison_report(searched_artists)
-                    break
-            else:
-                print("You need at least two artists saved to generate a comparison report.")
 
-        # 4. Print saved searches
+        # 3. Print saved searches
         elif user_prompt == "saved":
             if not searched_artists:
                 print("No artists saved yet.")
@@ -209,16 +220,16 @@ def main():
                 for item in searched_artists:
                     print(item["name"])
 
-        # 5. Delete artist
+        # 4. Delete artist
         elif user_prompt == "delete":
             for item in searched_artists:
                 print(item["name"])
 
             print("")
-            choice3 = input("Which artist would you like to delete from your saved searches?: ").lower()
+            delete_choice = input("Which artist would you like to delete from your saved searches?: ").lower()
 
             for item in searched_artists:
-                if item["name"].lower() == choice3:
+                if item["name"].lower() == delete_choice:
                     searched_artists.remove(item)
                     print(f"{item['name']} has been deleted from your saved searches.")
                     break
