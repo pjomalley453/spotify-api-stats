@@ -54,19 +54,15 @@ def search_artist():
         # Print results
         print("🎵 Artist:", artist_name)
         print("👥 Followers:", f"{artist_followers:,}")
-
-        if not artist_genres:
-            print("💿 Genres: N/A")
-        else:
+        if artist_genres:
             print("💿 Genres:", ", ".join(artist_genres))
-
+        else:
+            print("💿 Genres: N/A")
         print("")
         print("🔗 URL:", artist_url)
         print("")
 
-        choice = input("Use this artist? (y/n): ")
-        if choice.lower() == "y":
-            return artist_id, artist_name
+        return artist_id, artist_name
 
 
 # TOP TRACK REPORT
@@ -112,9 +108,7 @@ def artist_track_report(artist_id, artist_name):
 
 
 def generate_comparison_report(searched_artists):
-
     rows = []
-
     for artist in searched_artists:
         artist_id = artist["id"]
 
@@ -132,7 +126,7 @@ def generate_comparison_report(searched_artists):
         # Add to rows
         rows.append({
             "Artist": name,
-            "Followers": f"{followers:,}",
+            "Followers": followers,
             "Popularity": popularity,
             "Genres": ", ".join([g.title() for g in genres])  if genres else "N/A"
         })
@@ -140,11 +134,21 @@ def generate_comparison_report(searched_artists):
     # Put rows into data DataFrame
     df = pd.DataFrame(rows)
 
+    # Ask to sort
+    sort_field = input("Sort by (followers/popularity): ").strip().lower()
+    if sort_field not in {"followers", "popularity"}:
+        sort_field = "followers"  # default
+
+    order = input("Order (asc/desc): ").strip().lower()
+    ascending = (order == "asc")
+
+    df = df.sort_values(by=sort_field.capitalize(), ascending=ascending)
+
     # Create PDF
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, "Comparison of Searched Artists", ln=True, align="C")
+    pdf.cell(200, 10, f"Comparison of Searched Artists by {sort_field.title()}", ln=True, align="C")
 
     pdf.set_font("Arial", size=10)
     pdf.cell(50, 10, "Artist", border=1)
@@ -153,77 +157,82 @@ def generate_comparison_report(searched_artists):
     pdf.cell(70, 10, "Genres", border=1, ln=True)
 
     for _, row in df.iterrows():
-        pdf.cell(50, 10, row["Artist"][:20], border=1)  # truncate at 20 chars
-        pdf.cell(40, 10, str(row["Followers"]), border=1)
-        pdf.cell(30, 10, str(row["Popularity"]), border=1)
-        pdf.cell(70, 10, row["Genres"][:35], border=1, ln=True)  # truncate at 35 chars
+        pdf.cell(50, 10, row["Artist"][:20], border=1)
+        pdf.cell(40, 10, f"{int(row['Followers']):,}", border=1)  # format here
+        pdf.cell(30, 10, str(int(row["Popularity"])), border=1)
+        pdf.cell(70, 10, row["Genres"][:35], border=1, ln=True)
 
     pdf.output("artist_comparison_report.pdf")
 
+# i want to change the logic in main() so that the user can always have the option for (search/report/quit)
 
 def main():
     searched_artists = []
-    search_counter = 0
 
     while True:
+        print("")
+        user_prompt = input("Choose an option: (search/compare/saved/delete/quit) ").lower()
+
         # 1. Search for artist
-        artist_id, artist_name = search_artist()
-        search_counter += 1
+        if user_prompt == "search":
+            artist_id, artist_name = search_artist()
 
-        # 2. Generate artist's top tracks report?
-        choice1 = input("Would you like to see their top tracks printed as a PDF? (y/n): ").lower()
-        if choice1 == "y":
-            artist_track_report(artist_id, artist_name)
+            # Add to saved searches
+            choice1 = input("Add this artist to your saved searches? (y/n): ").lower()
+            if choice1 == "y":
+                if not any(a["id"] == artist_id for a in searched_artists):
+                    searched_artists.append({"id": artist_id, "name": artist_name})
+                    print(f"{artist_name} added to saved searches.\n")
+                else:
+                    print(f"{artist_name} is already in your saved searches.\n")
 
-        # 3. Add to saved searches list?
-        choice2 = input("Add artist to saved searches? (y/n): ").lower()
-        if choice2 == "y":
-            searched_artists.append({"id": artist_id, "name": artist_name})
+            # Artist top tracks report
+            choice2 = input("Would you like to see their top tracks printed as a PDF? (y/n): ").lower()
+            if choice2 == "y":
+                artist_track_report(artist_id, artist_name)
 
-        # 4. Offer comparison of 2+ artists
-        if search_counter >= 2:
-            choice3 = input(f"Compare top tracks of your {search_counter} searched artists? (y/n): ").lower()
-            if choice3 == "y":
-                generate_comparison_report(searched_artists)
-                break
+        # 3. Comparison report
+        elif user_prompt == "compare":
+            if len(searched_artists) >= 2:
+                choice2 = input(f"Create comparison PDF of your {len(searched_artists)} searched artists? (y/n): ").lower()
+                if choice2 == "y":
+                    generate_comparison_report(searched_artists)
+                    break
+            else:
+                print("You need at least two artists saved to generate a comparison report.")
 
-        # search again?
-        again = input("Search for another artist? (y/n): ")
-        if again.lower() == "n":
+        # 4. Print saved searches
+        elif user_prompt == "saved":
+            if not searched_artists:
+                print("No artists saved yet.")
+            else:
+                for item in searched_artists:
+                    print(item["name"])
+
+        # 5. Delete artist
+        elif user_prompt == "delete":
+            for item in searched_artists:
+                print(item["name"])
+
+            print("")
+            choice3 = input("Which artist would you like to delete from your saved searches?: ").lower()
+
+            for item in searched_artists:
+                if item["name"].lower() == choice3:
+                    searched_artists.remove(item)
+                    print(f"{item['name']} has been deleted from your saved searches.")
+                    break
+
+        # 4. Quit
+        elif user_prompt == "quit":
             print("Goodbye!")
             break
 
+        else:
+            print("Invalid response.")
+
 if __name__ == "__main__":
     main()
-
-
-##### MASTER PLAN #####
-
-# searched_artists = []
-
-# ask user to search for artist
-# increment search_counter
-
-# ask user if they want to generate PDF chart of top tracks' stats
-# if y:
-#   add artist to searched_artists list
-#   parse track stats
-#   create PDF / export
-# if n:
-#   if search_counter >= 2
-#       ask user: "Create a PDF comparing top tracks of your searched artists?"
-#   break
-
-# continue while loop
-
-# main_prompt = input("Enter an option (search/report) ")
-
-# ARTIST SEARCH
-
-
-# if search_counter >= 2:
-#     search_choice = input(f"Search for an artist or compare top tracks of "
-#                           f"{search_counter} searched artists? (artist/compare)").lower
 
 
 
