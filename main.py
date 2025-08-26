@@ -65,6 +65,31 @@ def search_artist():
         return artist_id, artist_name
 
 
+def write_comparison_excel(df, path="artist_comparison.xlsx"):
+    with pd.ExcelWriter(path, engine="xlsxwriter") as xw:
+        df.to_excel(xw, sheet_name="Comparison", index=False)
+        ws = xw.sheets["Comparison"]
+
+        # Create formats
+        header_fmt = xw.book.add_format({"bold": True})
+        num_fmt = xw.book.add_format({"num_format": "#,##0"})
+
+        # Apply header format (row 0)
+        for col_idx, col_name in enumerate(df.columns): ws.write(0, col_idx, col_name, header_fmt)
+
+        # Apply number format to Followers column (find its index)
+        followers_col = list(df.columns).index("Followers")
+        ws.set_column(followers_col, followers_col, 14, num_fmt)
+
+        # Reasonable widths for other columns
+        ws.set_column(0, 0, 22)  # Artist
+        ws.set_column(2, 2, 11)  # Popularity
+        ws.set_column(3, 3, 40)  # Genres
+
+        # Freeze header row & add filter
+        ws.freeze_panes(1, 0)
+        ws.autofilter(0, 0, len(df), len(df.columns)-1)
+
 # TOP TRACK REPORT
 def artist_track_report(artist_id, artist_name):
     top_tracks_url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks"
@@ -210,10 +235,37 @@ def main():
 
             # Comparison artist report
             elif report_choice == "2":
-                if len(searched_artists) < 2:
-                    print("You need at least two artists saved to generate a comparison report.")
+                if len(searched_artists) >= 2:
+
+                    # 1. Ask how to sort; default if blank or invalid
+                    raw = input("Sort by followers or popularity? [default: followers]").strip().lower()
+                    if raw in {"followers", "popularity"}:
+                        sort_field = raw
+                    else:
+                        sort_field = "followers"
+                    sort_col = "Followers" if sort_field == "followers" else "Popularity"
+
+                    # 2. Ask order; default if blank or invalid
+                    raw = input("Order asc or desc? [default: desc] ").strip().lower()
+                    if raw not in {"asc", "desc"}:
+                        order = raw
+                    else:
+                        order = "desc"
+                    ascending = (order == "asc")
+
+                    # 3. Build DataFrame
+                    df = build_comparison_df(searched_artists)  # Followers/Popularity must be ints
+                    df = sort_comparison_df(df, sort_col, ascending)
+                    write_comparison_excel(df, "artist_comparison.xlsx")
+                    print("Saved: artist_comparison.xlsx")
+
+                    # 5) Write Excel
+                    out_path = "artist_comparison.xlsx"
+                    write_comparison_excel(df, out_path)
+                    # print success message
+
                 else:
-                    generate_comparison_report(searched_artists)
+                    print("You need at least two artists saved to generate a comparison report.")
 
         # 3. Print saved searches
         elif user_prompt == "saved":
