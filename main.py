@@ -97,7 +97,7 @@ while True:
             pdf.cell(60, 10, row["Track"][:30], border=1)  # [:30] trims long names
             pdf.cell(60, 10, row["Album"][:30], border=1)
             pdf.cell(30, 10, str(row["Popularity"]), border=1)
-            pdf.cell(30, 10, str(row["Duration"]), border=1, ln=True)
+            pdf.cell(30, 10, str(row["Duration"]) + " min", border=1, ln=True)
 
         # loop through df rows and add to PDF table
         pdf.output(f"top_tracks_{artist_name}.pdf")
@@ -105,6 +105,6 @@ while True:
     choice2 = input("Search for another artist? (y/n): ")
     print("")
 
-    if choice1 == "n":
+    if choice2 == "n":
         break
 
