@@ -89,13 +89,14 @@ def artist_track_report(artist_id, artist_name):
     pdf.cell(200, 10, f"Top Tracks for {artist_name}", ln=True, align="C")
 
     # Table header
-    pdf.set_font("Arial", size=10)
+    pdf.set_font("Arial", style="B", size=10)
     pdf.cell(60, 10, "Track", border=1)
     pdf.cell(60, 10, "Album", border=1)
     pdf.cell(30, 10, "Popularity", border=1)
     pdf.cell(30, 10, "Duration", border=1, ln=True)
 
     # Table rows
+    pdf.set_font("Arial", size=10)
     for _, row in df.iterrows():
         pdf.cell(60, 10, row["Track"][:30], border=1)  # [:30] trims long names
         pdf.cell(60, 10, row["Album"][:30], border=1)
@@ -150,12 +151,14 @@ def generate_comparison_report(searched_artists):
     pdf.set_font("Arial", size=12)
     pdf.cell(200, 10, f"Comparison of Searched Artists by {sort_field.title()}", ln=True, align="C")
 
-    pdf.set_font("Arial", size=10)
+    # Table header
+    pdf.set_font("Arial", style="B", size=10)
     pdf.cell(50, 10, "Artist", border=1)
     pdf.cell(40, 10, "Followers", border=1)
     pdf.cell(30, 10, "Popularity", border=1)
     pdf.cell(70, 10, "Genres", border=1, ln=True)
 
+    pdf.set_font("Arial", size=10)
     for _, row in df.iterrows():
         pdf.cell(50, 10, row["Artist"][:20], border=1)
         pdf.cell(40, 10, f"{int(row['Followers']):,}", border=1)  # format here
@@ -203,7 +206,7 @@ def main():
                     if not match:
                         print("Artist not in saved searches.")
                     else:
-                        artist_track_report(searched_artists[0]["id"][name], searched_artists[0]["name"][name])
+                        artist_track_report(match["id"], match["name"])
 
             # Comparison artist report
             elif report_choice == "2":
