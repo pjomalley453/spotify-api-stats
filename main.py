@@ -1,4 +1,4 @@
-import requests, os
+import os
 import pandas as pd
 from dotenv import load_dotenv
 
@@ -12,33 +12,22 @@ client_id = os.environ["SPOTIFY_CLIENT_ID"]
 client_secret = os.environ["SPOTIFY_CLIENT_SECRET"]
 
 api = SpotifyAPI(client_id, client_secret)
-data = services.parse_artists(api)
-artists = services.parse_artists(data)
+query = "four tet"  # test query
+url = "https://api.spotify.com/v1/search"
+params = {"q": query, "type": "artist", "limit": 5}
+
+raw = api.get(url, params=params)      # raw JSON from Spotify
+artists = services.parse_artists(raw)  # parsed list of dicts
+
 
 # Token function ✅
-def get_spotify_token():
-    token_url = "https://accounts.spotify.com/api/token"
-    data = {"grant_type": "client_credentials"}
-    resp = requests.post(token_url, data=data, auth=(client_id, client_secret))
-
-    # print("Status:", resp.status_code)
-    # print("Text:", resp.text)
-
-    token_json = resp.json()
-    return token_json["access_token"]
-
-# Get fresh token ✅
-access_token = get_spotify_token()
-headers = {"Authorization": f"Bearer {access_token}"}
-
-# ✅
 
 
 # TOP TRACKS EXCEL FUNCTIONS
 def build_top_tracks_df(artist_id):
-    top_tracks_url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks"
-    response = requests.get(top_tracks_url, headers=headers, params={"market": "US"})
-    tracks = response.json()["tracks"]
+    url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks"
+    data = api.get(url, params={"market": "US"})
+    tracks = data["tracks"]
 
     rows = []
     for track in tracks:
@@ -104,8 +93,7 @@ def build_comparison_df(searched_artists):
 
         # Call Spotify API for artist profile
         url = f"https://api.spotify.com/v1/artists/{artist_id}"
-        response = requests.get(url, headers=headers)
-        data = response.json()
+        data = api.get(url)
 
         # Extract fields
         name = data["name"]
@@ -169,9 +157,12 @@ def main():
         # 1. Search for artist
         if user_prompt == "search":
             query = input("Enter an artist name: ").strip()
-
+            raw = api.get(
+                "https://api.spotify.com/v1/search",
+                params={"q": query, "type": "artist", "limit": 5}
+            )
+            artists = services.parse_artists(raw)
             data = api.search_artists_raw(query)
-            artists = parse_artists(data)
 
             if not artists:
                 print("No match found, try again. \n")

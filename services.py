@@ -1,6 +1,9 @@
 from typing import Optional, Dict
 
 def parse_artists(data):
+    if not isinstance(data, dict):
+        raise TypeError("parse_artists expects a dict (raw Spotify JSON).")
+
     items = (data or {}).get("artists", {}).get("items", [])
     results = []
     for artist in items:
@@ -38,3 +41,4 @@ def find_best_artist(api, query: str, limit: int = 5) -> Optional[Dict]:
         "genres": artist.get("genres", []),
         "url": artist.get("external_urls", {}).get("spotify", "")
     }
+
