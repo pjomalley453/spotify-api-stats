@@ -193,6 +193,33 @@ def generate_comparison_report(searched_artists):
     pdf.output("artist_comparison_report.pdf")
 
 
+def build_comparison_df(searched_artists):
+    """Returns pd.DataFrame with columns Artist, Followers, Popularity, Genres."""
+    rows = []
+    for a in searched_artists:
+        artist_id = a["id"]
+        url = f"https://api.spotify.com/v1/artists/{artist_id}"
+        response = requests.get(url, headers=headers)
+        data = response.json()
+
+        name = data["name"]
+        followers = int(data["followers"]["total"])
+        popularity = int(data["popularity"])
+        genres_list = data.get("genres", [])
+
+        rows.append({
+            "Artist": name,
+            "Followers": followers,
+            "Popularity": popularity,
+            "Genres": ", ".join(g.title() for g in genres_list) if genres_list else "N/A"
+        })
+    return pd.DataFrame(rows)
+
+
+def sort_comparison_df(df, sort_col="Followers", ascending=False):
+    """Sort the DataFrame by Followers or Popularity."""
+    
+
 def main():
     searched_artists = []
 
