@@ -2,18 +2,18 @@ import requests, os
 import pandas as pd
 from dotenv import load_dotenv
 
-from spotify_tool import SpotifyArtistTool
+from services import parse_artists
+from spotify_api import SpotifyAPI
 import services
-from fpdf import FPDF
 
 # Load secrets
 load_dotenv()
 client_id = os.environ["SPOTIFY_CLIENT_ID"]
 client_secret = os.environ["SPOTIFY_CLIENT_SECRET"]
-tool = SpotifyArtistTool(client_id, client_secret)
 
-data = api.search_artists_raw("four tet")
-artists = parse_artists(data)
+api = SpotifyAPI(client_id, client_secret)
+data = services.parse_artists(api)
+artists = services.parse_artists(data)
 
 # Token function ✅
 def get_spotify_token():
@@ -32,43 +32,6 @@ access_token = get_spotify_token()
 headers = {"Authorization": f"Bearer {access_token}"}
 
 # ✅
-def search_artist():
-    while True:
-        artist_name = input("Enter an artist name: ").lower()
-        print("")
-
-        search_url = f"https://api.spotify.com/v1/search?q={artist_name}&type=artist&limit=1"
-        params = {"q": artist_name, "type": "artist", "limit": 1}
-        search_response = requests.get(search_url, headers=headers, params=params)
-        artist_data = search_response.json()
-        # print(artist_data)
-
-        # Invalid artist search check
-        if not artist_data["artists"]["items"]:  # no results
-            print("No match found, try again.\n")
-            continue
-
-        # Extract first artist
-        artist = artist_data["artists"]["items"][0]
-
-        artist_id = artist["id"]
-        artist_name = artist["name"]
-        artist_url = artist["external_urls"]["spotify"]
-        artist_genres = artist["genres"]
-        artist_followers = artist["followers"]["total"]
-
-        # Print results
-        print("🎵 Artist:", artist_name)
-        print("👥 Followers:", f"{artist_followers:,}")
-        if artist_genres:
-            print("💿 Genres:", ", ".join(artist_genres))
-        else:
-            print("💿 Genres: N/A")
-        print("")
-        print("🔗 URL:", artist_url)
-        print("")
-
-        return artist_id, artist_name
 
 
 # TOP TRACKS EXCEL FUNCTIONS
@@ -205,16 +168,35 @@ def main():
 
         # 1. Search for artist
         if user_prompt == "search":
-            artist_id, artist_name = search_artist()
+            query = input("Enter an artist name: ").strip()
+
+            data = api.search_artists_raw(query)
+            artists = parse_artists(data)
+
+            if not artists:
+                print("No match found, try again. \n")
+            else:
+                artist = artists[0]
+
+                # Print results
+                print("🎵 Artist:", artist["name"])
+                print("👥 Followers:", f"{artist['followers']:,}")
+                if artist["genres"]:
+                    print("💿 Genres:", ", ".join(artist["genres"]))
+                else:
+                    print("💿 Genres: N/A")
+                print("")
+                print("🔗 URL:", artist["url"])
+                print("")
 
             # Add to saved searches
             choice1 = input("Add this artist to your saved searches? (y/n): ").lower()
             if choice1 == "y":
-                if not any(a["id"] == artist_id for a in searched_artists):
-                    searched_artists.append({"id": artist_id, "name": artist_name})
-                    print(f"{artist_name} added to saved searches.\n")
+                if not any(a["id"] == artist["id"] for a in searched_artists):
+                    searched_artists.append(artist)
+                    print(f"{artist["name"]} added to saved searches.\n")
                 else:
-                    print(f"{artist_name} is already in your saved searches.\n")
+                    print(f"{artist["name"]} is already in your saved searches.\n")
 
         # 2. Create report
         elif user_prompt == "report":
