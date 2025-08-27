@@ -2,7 +2,6 @@ import os
 import pandas as pd
 from dotenv import load_dotenv
 
-from services import parse_artists
 from spotify_api import SpotifyAPI
 import services
 
@@ -170,6 +169,7 @@ def main():
                 artist = artists[0]
 
                 # Print results
+                print("")
                 print("🎵 Artist:", artist["name"])
                 print("👥 Followers:", f"{artist['followers']:,}")
                 if artist["genres"]:
@@ -191,6 +191,7 @@ def main():
 
         # 2. Create report
         elif user_prompt == "report":
+            print("")
             report_choice = input("Individual or comparison Excel report?: (1/2)")
 
             # Individual artist report
@@ -201,7 +202,7 @@ def main():
                     for item in searched_artists:
                         print(item["name"])
 
-                    name = input("Type the artist name: ").strip().lower()
+                    name = input("Enter the artist name: ").strip().lower()
                     match = next((a for a in searched_artists if a["name"].lower() == name), None)
 
                     if not match:
@@ -226,6 +227,7 @@ def main():
                 if len(searched_artists) >= 2:
 
                     # 1. Ask how to sort; default if blank or invalid
+                    print("")
                     raw = input("Sort by followers or popularity? [default: followers]").strip().lower()
                     if raw in {"followers", "popularity"}:
                         sort_field = raw
@@ -234,6 +236,7 @@ def main():
                     sort_col = "Followers" if sort_field == "followers" else "Popularity"
 
                     # 2. Ask order; default if blank or invalid
+                    print("")
                     raw = input("Order asc or desc? [default: desc] ").strip().lower()
                     order = raw if raw in {"asc", "desc"} else "desc"
                     ascending = (order == "asc")
@@ -244,6 +247,7 @@ def main():
 
                     # 4. Write Excel
                     write_comparison_excel(df, "artist_comparison.xlsx")
+                    print("")
                     print("Saved: artist_comparison.xlsx")
 
                 else:
@@ -252,18 +256,22 @@ def main():
         # 3. Print saved searches
         elif user_prompt == "saved":
             if not searched_artists:
+                print("")
                 print("No artists saved yet.")
             else:
+                print("")
+                print("Saved artists:")
                 for item in searched_artists:
                     print(item["name"])
 
         # 4. Delete artist
         elif user_prompt == "delete":
+            print("Saved artists:")
             for item in searched_artists:
                 print(item["name"])
 
             print("")
-            delete_choice = input("Which artist would you like to delete from your saved searches?: ").lower()
+            delete_choice = input("Enter the artist to delete: ").lower()
 
             for item in searched_artists:
                 if item["name"].lower() == delete_choice:
@@ -273,10 +281,12 @@ def main():
 
         # 4. Quit
         elif user_prompt == "quit":
+            print("")
             print("Goodbye!")
             break
 
         else:
+            print("")
             print("Invalid response.")
 
 if __name__ == "__main__":
