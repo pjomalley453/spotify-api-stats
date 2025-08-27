@@ -30,7 +30,6 @@ cd spotify-api-stats
 cp .env.example .env
 ./setup.sh
 source .venv/bin/activate
-python main.py
 ```
 With Pip:
 ```bash
