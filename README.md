@@ -25,8 +25,12 @@ Highlights **API integration**, **data analysis with Pandas**, and **automated r
 
 ### Clone & Install
 ```bash
-git clone git@github.com:yourusername/spotify-api-stats.git
+git clone https://github.com/<you>/spotify-api-stats.git
 cd spotify-api-stats
+cp .env.example .env
+./setup.sh
+source .venv/bin/activate
+python main.py
 ```
 With Pip:
 ```bash
