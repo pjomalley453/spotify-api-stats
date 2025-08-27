@@ -20,11 +20,11 @@ def get_spotify_token():
     token_json = resp.json()
     return token_json["access_token"]
 
-# Get fresh token
+# Get fresh token ✅
 access_token = get_spotify_token()
 headers = {"Authorization": f"Bearer {access_token}"}
 
-
+# ✅
 def search_artist():
     while True:
         artist_name = input("Enter an artist name: ").lower()

@@ -26,7 +26,6 @@ class SpotifyArtistTool:
 
         return self.access_token
 
-
     def _headers(self):
         # Always ensure a fresh token
         token = self._get_spotify_token()
@@ -44,5 +43,25 @@ class SpotifyArtistTool:
         resp.raise_for_status()
         return resp.json()
 
+    def search_artist(self, query: str, limit: int = 5):
+        query = (query or "").strip()
+        if not query:
+            return []
 
+        url = f"https://api.spotify.com/v1/search?q={query}&type=artist&limit={limit}"
+        params = {"q": query, "type": "artist", "limit": limit}
+
+        data = self.get(url, params=params)
+        items = data.get("artists", {}).get("items", []) or []
+        results = []
+        for artist in items:
+            results.append({
+                "id": artist["id"],
+              "name": artist["name"],
+              "url": artist["external_urls"]["spotify"],
+              "genres": artist.get("genres", []),
+              "followers": int(artist.get["followers"]["total"]),
+              "popularity": int(artist.get("popularity", 0))
+              })
+        return results
 
