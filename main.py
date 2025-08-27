@@ -7,9 +7,11 @@ import services
 
 # Load secrets
 load_dotenv()
-api = SpotifyAPI(os.environ["SPOTIFY_CLIENT_ID"], os.environ["SPOTIFY_CLIENT_SECRET"])
+client_id = os.environ["SPOTIFY_CLIENT_ID"]
+client_secret = os.environ["SPOTIFY_CLIENT_SECRET"]
 
-# Example: build top tracks (best as an API method)
+api = SpotifyAPI(client_id, client_secret)
+
 artists = api.search_artists("four tet", limit=1)   # search for an artist
 if artists:
     artist_id = artists[0]["id"]  # take the first result’s ID
