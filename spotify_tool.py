@@ -64,14 +64,14 @@ class SpotifyArtistTool:
               })
         return results
 
-def search_artist_best(self, query: str):
-    results = self.search_artists(query, limit=5)
-    if not results:
-        return None
+    def search_artist_best(self, query: str):
+        results = self.search_artists(query, limit=5)
+        if not results:
+            return None
+    
+        q = query.strip().lower()
+        exact = next((a for a in results if a["name"].lower() == q), None)
+        if exact:
+            return exact
 
-    q = query.strip().lower()
-    exact = next((a for a in results if a["name"].lower() == q), None)
-    if exact:
-        return exact
-
-    return max(results, key=lambda a: a["popularity"])
+        return max(results, key=lambda a: a["popularity"])
