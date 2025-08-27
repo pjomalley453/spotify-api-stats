@@ -1,4 +1,4 @@
-import os, sys
+import os
 import pandas as pd
 from dotenv import load_dotenv
 
@@ -8,10 +8,6 @@ import services
 
 # Load secrets
 load_dotenv()
-missing = [k for k in ("SPOTIFY_CLIENT_ID","SPOTIFY_CLIENT_SECRET") if not os.getenv(k)]
-if missing:
-    sys.exit(f"Missing env vars: {', '.join(missing)}. Fill them in .env (see .env.example).")
-
 client_id = os.environ["SPOTIFY_CLIENT_ID"]
 client_secret = os.environ["SPOTIFY_CLIENT_SECRET"]
 
@@ -189,9 +185,9 @@ def main():
             if choice1 == "y":
                 if not any(a["id"] == artist["id"] for a in searched_artists):
                     searched_artists.append(artist)
-                    print(f"{artist['name']} added to saved searches.\n")
+                    print(f"{artist["name"]} added to saved searches.\n")
                 else:
-                    print(f"{artist['name']} is already in your saved searches.\n")
+                    print(f"{artist["name"]} is already in your saved searches.\n")
 
         # 2. Create report
         elif user_prompt == "report":
