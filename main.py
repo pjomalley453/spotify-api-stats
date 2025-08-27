@@ -1,12 +1,14 @@
 import requests, os
 import pandas as pd
 from dotenv import load_dotenv
+from spotify_tool import SpotifyArtistTool
 from fpdf import FPDF
 
 # Load secrets
-load_dotenv()  # load from .env
+load_dotenv()
 client_id = os.environ["SPOTIFY_CLIENT_ID"]
 client_secret = os.environ["SPOTIFY_CLIENT_SECRET"]
+tool = SpotifyArtistTool(client_id, client_secret)
 
 # Token function ✅
 def get_spotify_token():
