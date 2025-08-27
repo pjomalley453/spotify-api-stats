@@ -42,36 +42,11 @@ class SpotifyArtistTool:
         resp.raise_for_status()
         return resp.json()
 
-    def search_artist(self, query: str, limit: int = 5):
+    def search_artists_raw(self, query: str, limit: int = 5):
         query = (query or "").strip()
         if not query:
-            return []
-
-        url = f"https://api.spotify.com/v1/search?q={query}&type=artist&limit={limit}"
+            return {}
+        url = "https://api.spotify.com/v1/search"
         params = {"q": query, "type": "artist", "limit": limit}
+        return self.get(url, params=params)
 
-        data = self.get(url, params=params)
-        items = data.get("artists", {}).get("items", []) or []
-        results = []
-        for artist in items:
-            results.append({
-                "id": artist["id"],
-              "name": artist["name"],
-              "url": artist["external_urls"]["spotify"],
-              "genres": artist.get("genres", []),
-              "followers": int(artist.get["followers"]["total"]),
-              "popularity": int(artist.get("popularity", 0))
-              })
-        return results
-
-    def search_artist_best(self, query: str):
-        results = self.search_artists(query, limit=5)
-        if not results:
-            return None
-    
-        q = query.strip().lower()
-        exact = next((a for a in results if a["name"].lower() == q), None)
-        if exact:
-            return exact
-
-        return max(results, key=lambda a: a["popularity"])
