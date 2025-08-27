@@ -33,7 +33,16 @@ class SpotifyArtistTool:
         return {"Authorization": f"Bearer {token}"}
 
     def get(self, url, params=None):
-        pass
+        import requests
+        resp = requests.get(url, headers=self._headers(), params=params, timeout=20)
+
+        # Optional: auto-retry once on 401 (token just expired on server side)
+        if resp.status_code == 401:
+            # force refresh and retry
+            self.access_token = None
+            resp = requests.get(url, headers=self._headers(), params=params, timeout=20)
+        resp.raise_for_status()
+        return resp.json()
 
 
 
