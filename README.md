@@ -1,49 +1,26 @@
 # Spotify Artist Stats Tool
 
-A Python program that uses the [Spotify Web API](https://developer.spotify.com/documentation/web-api) to fetch artist data and generate PDF reports.  
-Highlights **API integration**, **data analysis with Pandas**, and **automated reporting with FPDF2**.
+A small Python app that uses the [Spotify Web API](https://developer.spotify.com/documentation/web-api) to fetch artist data and generate reports.  
+Highlights **API integration**, **Pandas data wrangling**, and **automated PDF reporting (FPDF2)**.
 
 ---
 
-## Features
-- 🔎 Search artists by name  
-- 📊 View details: followers, popularity, genres, profile link  
-- 📝 Generate PDF reports:
-  - Top Tracks (track, album, popularity, duration)  
-  - Multi-Artist Comparison (followers, popularity, genres)  
-- ✅ Prevents duplicates & handles invalid searches
+## Quickstart
 
----
-
-## Tech Stack
-- Python 3.11+  
-- Requests • Pandas • FPDF2 • python-dotenv  
-
----
-
-## Setup
-
-### Clone & Install
 ```bash
+# 1) Clone
 git clone https://github.com/<you>/spotify-api-stats.git
 cd spotify-api-stats
+
+# 2) Env vars
 cp .env.example .env
+# then edit .env with your Spotify credentials:
+# SPOTIFY_CLIENT_ID=...
+# SPOTIFY_CLIENT_SECRET=...
+
+# 3) One-shot setup (venv + deps)
 ./setup.sh
 source .venv/bin/activate
-```
-With Pip:
-```bash
-pip install -r requirements.txt
-```
-With conda:
-```bash
-conda env create -f environment.yml
-conda activate spotify-api-stats
-```
-Create a .env in the project root:
-SPOTIFY_CLIENT_ID=your_spotify_client_id
-SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 
-Usage:
-```bash
+# 4) Run
 python main.py
