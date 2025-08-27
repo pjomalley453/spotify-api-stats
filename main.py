@@ -8,7 +8,7 @@ load_dotenv()  # load from .env
 client_id = os.environ["SPOTIFY_CLIENT_ID"]
 client_secret = os.environ["SPOTIFY_CLIENT_SECRET"]
 
-# Token function
+# Token function ✅
 def get_spotify_token():
     token_url = "https://accounts.spotify.com/api/token"
     data = {"grant_type": "client_credentials"}
