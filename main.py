@@ -65,33 +65,8 @@ def search_artist():
         return artist_id, artist_name
 
 
-def write_comparison_excel(df, path="artist_comparison.xlsx"):
-    with pd.ExcelWriter(path, engine="xlsxwriter") as xw:
-        df.to_excel(xw, sheet_name="Comparison", index=False)
-        ws = xw.sheets["Comparison"]
-
-        # Create formats
-        header_fmt = xw.book.add_format({"bold": True})
-        num_fmt = xw.book.add_format({"num_format": "#,##0"})
-
-        # Apply header format (row 0)
-        for col_idx, col_name in enumerate(df.columns): ws.write(0, col_idx, col_name, header_fmt)
-
-        # Apply number format to Followers column (find its index)
-        followers_col = list(df.columns).index("Followers")
-        ws.set_column(followers_col, followers_col, 14, num_fmt)
-
-        # Reasonable widths for other columns
-        ws.set_column(0, 0, 22)  # Artist
-        ws.set_column(2, 2, 11)  # Popularity
-        ws.set_column(3, 3, 40)  # Genres
-
-        # Freeze header row & add filter
-        ws.freeze_panes(1, 0)
-        ws.autofilter(0, 0, len(df), len(df.columns)-1)
-
-# TOP TRACK REPORT
-def artist_track_report(artist_id, artist_name):
+# PDF FUNCTIONS
+def artist_track_pdf(artist_id, artist_name):
     top_tracks_url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks"
     response = requests.get(top_tracks_url, headers=headers, params={"market": "US"})
     tracks = response.json()["tracks"]
@@ -133,7 +108,7 @@ def artist_track_report(artist_id, artist_name):
     pdf.output(f"top_tracks_{safe_name}.pdf")
 
 
-def generate_comparison_report(searched_artists):
+def generate_comparison_pdf(searched_artists):
     rows = []
     for artist in searched_artists:
         artist_id = artist["id"]
@@ -193,6 +168,32 @@ def generate_comparison_report(searched_artists):
     pdf.output("artist_comparison_report.pdf")
 
 
+# EXCEL FUNCTIONS
+def build_top_tracks_df(artist_id, artist_name):
+    top_tracks_url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks"
+    response = requests.get(top_tracks_url, headers=headers, params={"market": "US"})
+    tracks = response.json()["tracks"]
+
+    rows = []
+    for track in tracks:
+        rows.append({
+            "Track": track["name"],
+            "Album": track["album"]["name"],
+            "Popularity": track["popularity"],
+            "Duration (min)": track["duration_ms"] // 60000
+        })
+
+    return pd.DataFrame(rows)
+
+
+def sort_top_tracks_df(df, sort_col="Popularity", ascending=False):
+    """Sort the top tracks DataFrame by a given column."""
+    if sort_col not in {"Track", "Album", "Popularity", "Duration (min)"}:
+        sort_col = "Popularity"  # default
+
+    return df.sort_values(by=sort_col, ascending=ascending, ignore_index=True)
+
+
 def build_comparison_df(searched_artists):
     """Returns pd.DataFrame with columns Artist, Followers, Popularity, Genres."""
     rows = []
@@ -218,7 +219,38 @@ def build_comparison_df(searched_artists):
 
 def sort_comparison_df(df, sort_col="Followers", ascending=False):
     """Sort the DataFrame by Followers or Popularity."""
-    
+    if sort_col not in {"Followers", "Popularity"}:
+        sort_col = "Followers"
+
+    df = df.sort_values(by=sort_col, ascending=ascending, ignore_index=True)
+    return df
+
+
+def write_comparison_excel(df, path="artist_comparison.xlsx"):
+    with pd.ExcelWriter(path, engine="xlsxwriter") as xw:
+        df.to_excel(xw, sheet_name="Comparison", index=False)
+        ws = xw.sheets["Comparison"]
+
+        # Create formats
+        header_fmt = xw.book.add_format({"bold": True})
+        num_fmt = xw.book.add_format({"num_format": "#,##0"})
+
+        # Apply header format (row 0)
+        for col_idx, col_name in enumerate(df.columns): ws.write(0, col_idx, col_name, header_fmt)
+
+        # Apply number format to Followers column (find its index)
+        followers_col = list(df.columns).index("Followers")
+        ws.set_column(followers_col, followers_col, 14, num_fmt)
+
+        # Reasonable widths for other columns
+        ws.set_column(0, 0, 22)  # Artist
+        ws.set_column(2, 2, 11)  # Popularity
+        ws.set_column(3, 3, 40)  # Genres
+
+        # Freeze header row & add filter
+        ws.freeze_panes(1, 0)
+        ws.autofilter(0, 0, len(df), len(df.columns)-1)
+
 
 def main():
     searched_artists = []
@@ -258,7 +290,7 @@ def main():
                     if not match:
                         print("Artist not in saved searches.")
                     else:
-                        artist_track_report(match["id"], match["name"])
+                        artist_track_pdf(match["id"], match["name"])
 
             # Comparison artist report
             elif report_choice == "2":
@@ -280,16 +312,13 @@ def main():
                         order = "desc"
                     ascending = (order == "asc")
 
-                    # 3. Build DataFrame
+                    # 3. Build + sort
                     df = build_comparison_df(searched_artists)  # Followers/Popularity must be ints
                     df = sort_comparison_df(df, sort_col, ascending)
+
+                    # 4. Write Excel
                     write_comparison_excel(df, "artist_comparison.xlsx")
                     print("Saved: artist_comparison.xlsx")
-
-                    # 5) Write Excel
-                    out_path = "artist_comparison.xlsx"
-                    write_comparison_excel(df, out_path)
-                    # print success message
 
                 else:
                     print("You need at least two artists saved to generate a comparison report.")
