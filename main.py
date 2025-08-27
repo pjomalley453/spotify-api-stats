@@ -193,6 +193,7 @@ def sort_top_tracks_df(df, sort_col="Popularity", ascending=False):
 
     return df.sort_values(by=sort_col, ascending=ascending, ignore_index=True)
 
+
 def write_top_tracks_excel(df, artist_name):
     """Write an artist's top tracks DataFrame to an Excel file with simple formatting."""
     if df.empty:
@@ -208,30 +209,24 @@ def write_top_tracks_excel(df, artist_name):
         ws = xw.sheets["TopTracks"]
 
         # Formats
-        
+        header_fmt = xw.book.add_format({"bold": True})
+        int_fmt = xw.book.add_format({"num_format": "0"})
 
-    # 2) with pd.ExcelWriter(path, engine="xlsxwriter") as xw:
-    #       df.to_excel(xw, sheet_name="TopTracks", index=False)
-    #       ws = xw.sheets["TopTracks"]
+        # Bold header row
+        for col_idx, col_name in enumerate(df.columns):
+            ws.write(0, col_idx, col_name, header_fmt)
 
-    #       # formats
-    #       header_fmt = xw.book.add_format({"bold": True})
-    #       int_fmt    = xw.book.add_format({"num_format": "0"})
+        # Set reasonable column widths + formats
+        ws.set_column(0, 0, 30)  # Track
+        ws.set_column(1, 1, 30)  # Album
+        ws.set_column(2, 2, 11, int_fmt)  # Popularity
+        ws.set_column(3, 3, 14, int_fmt)  # Duration (min)
 
-    #       # bold header row
-    #       # for col_idx, col_name in enumerate(df.columns): ws.write(0, col_idx, col_name, header_fmt)
+        # Freeze header row & add filter
+        ws.freeze_panes(1, 0)
+        ws.autofilter(0, 0, len(df), len(df.columns) - 1)
 
-    #       # set widths + numeric formats:
-    #       # Track (col 0): width ~30
-    #       # Album (col 1): width ~30
-    #       # Popularity (col 2): width ~11, format int_fmt
-    #       # Duration (min) (col 3): width ~14, format int_fmt
-
-    #       # freeze header + filter
-    #       # ws.freeze_panes(1, 0)
-    #       # ws.autofilter(0, 0, len(df), len(df.columns)-1)
-
-    # 3) print or return saved path
+    print(f"Saved: {path}")
 
 
 def build_comparison_df(searched_artists):
@@ -239,15 +234,19 @@ def build_comparison_df(searched_artists):
     rows = []
     for a in searched_artists:
         artist_id = a["id"]
+
+        # Call Spotify API for artist profile
         url = f"https://api.spotify.com/v1/artists/{artist_id}"
         response = requests.get(url, headers=headers)
         data = response.json()
 
+        # Extract fields
         name = data["name"]
         followers = int(data["followers"]["total"])
         popularity = int(data["popularity"])
         genres_list = data.get("genres", [])
 
+        # Build rows
         rows.append({
             "Artist": name,
             "Followers": followers,
