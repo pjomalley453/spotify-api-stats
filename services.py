@@ -1,9 +1,6 @@
 from typing import Optional, Dict
 import pandas as pd
-from main import client_id, client_secret
 from spotify_api import SpotifyAPI
-
-api = SpotifyAPI(client_id=client_id, client_secret=client_secret)
 
 def find_best_artist(api, query: str, limit: int = 5) -> Optional[Dict]:
     """
