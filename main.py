@@ -7,19 +7,22 @@ import services
 
 # Load secrets
 load_dotenv()
-client_id = os.environ["SPOTIFY_CLIENT_ID"]
-client_secret = os.environ["SPOTIFY_CLIENT_SECRET"]
+api = SpotifyAPI(os.environ["SPOTIFY_CLIENT_ID"], os.environ["SPOTIFY_CLIENT_SECRET"])
 
-api = SpotifyAPI(client_id, client_secret)
+# Example: search
+artists = api.search_artists("four tet", limit=5)  # returns list[dict] (id, name, followers, etc.)
+# Example: build top tracks (best as an API method)
+df = api.build_top_tracks_df(artist_id)           # returns DataFrame
+df = services.sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
+# Example: write excel (your writer function)
+services.write_top_tracks_excel(df, f"top_tracks_{artist_name}.xlsx")
+
 query = "four tet"  # test query
 url = "https://api.spotify.com/v1/search"
 params = {"q": query, "type": "artist", "limit": 5}
 
 raw = api.get(url, params=params)      # raw JSON from Spotify
 artists = services.parse_artists(raw)  # parsed list of dicts
-
-
-# Token function ✅
 
 
 # TOP TRACKS EXCEL FUNCTIONS

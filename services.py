@@ -66,3 +66,9 @@ def build_top_tracks_df(api, artist_id: str, market: str = "US"):
 
     return pd.DataFrame(rows)
 
+def sort_top_tracks_df(df: pd.DataFrame, sort_col: str = "Popularity", ascending: bool = False) -> pd.DataFrame:
+    """Sort the top-tracks DataFrame by a supported column."""
+    allowed = {"Track", "Album", "Popularity", "Duration (min)"}
+    if sort_col not in allowed:
+        sort_col = "Popularity"
+    return df.sort_values(by=sort_col, ascending=ascending, ignore_index=True)
