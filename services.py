@@ -1,4 +1,9 @@
 from typing import Optional, Dict
+import pandas as pd
+from main import client_id, client_secret
+from spotify_api import SpotifyAPI
+
+api = SpotifyAPI(client_id=client_id, client_secret=client_secret)
 
 def parse_artists(data):
     if not isinstance(data, dict):
@@ -41,4 +46,23 @@ def find_best_artist(api, query: str, limit: int = 5) -> Optional[Dict]:
         "genres": artist.get("genres", []),
         "url": artist.get("external_urls", {}).get("spotify", "")
     }
+
+def build_top_tracks_df(api, artist_id: str, market: str = "US"):
+    if not artist_id:
+        if not artist_id:
+            raise ValueError("artist_id is required")
+
+    data = api.get_artist_top_tracks(artist_id, market=market)
+    tracks = (data or {}).get("tracks", []) or []
+
+    rows = []
+    for t in tracks:
+        rows.append({
+            "Track": t.get("name", ""),
+            "Album": (t.get("album") or {}).get("name", ""),
+            "Popularity": int(t.get("popularity", 0)),
+            "Duration (min)": int(t.get("duration_ms") or 0 // 60000),
+        })
+
+    return pd.DataFrame(rows)
 

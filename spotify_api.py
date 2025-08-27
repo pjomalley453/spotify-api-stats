@@ -50,3 +50,14 @@ class SpotifyAPI:
         params = {"q": query, "type": "artist", "limit": limit}
         return self.get(url, params=params)
 
+    def get_artist_top_tracks(self, artist_id: str, market: str = "US") -> dict:
+        """Low-level call: return raw JSON for an artist's top tracks. No pandas here—just HTTP."""
+        if not artist_id:
+            raise ValueError("artist_id is required")
+
+        url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks"
+        # Reuse the authenticated GET helper
+        data = self.get(url, params={"market": market})
+        # Ensure we always return a dict with a 'tracks' key
+        return data if isinstance(data, dict) else {"tracks": []}
+
