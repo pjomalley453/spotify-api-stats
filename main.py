@@ -9,10 +9,12 @@ import services
 load_dotenv()
 api = SpotifyAPI(os.environ["SPOTIFY_CLIENT_ID"], os.environ["SPOTIFY_CLIENT_SECRET"])
 
-# Example: search
-artists = api.search_artists("four tet", limit=5)  # returns list[dict] (id, name, followers, etc.)
 # Example: build top tracks (best as an API method)
-df = api.build_top_tracks_df(artist_id)           # returns DataFrame
+artists = api.search_artists("four tet", limit=1)   # search for an artist
+if artists:
+    artist_id = artists[0]["id"]  # take the first result’s ID
+    df = api.build_top_tracks_df(artist_id)  # build top tracks DataFrame
+
 df = services.sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
 # Example: write excel (your writer function)
 services.write_top_tracks_excel(df, f"top_tracks_{artist_name}.xlsx")
@@ -22,33 +24,11 @@ url = "https://api.spotify.com/v1/search"
 params = {"q": query, "type": "artist", "limit": 5}
 
 raw = api.get(url, params=params)      # raw JSON from Spotify
-artists = services.parse_artists(raw)  # parsed list of dicts
+artists = api.search_artists(raw)  # parsed list of dicts
 
 
 # TOP TRACKS EXCEL FUNCTIONS
-def build_top_tracks_df(artist_id):
-    url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks"
-    data = api.get(url, params={"market": "US"})
-    tracks = data["tracks"]
 
-    rows = []
-    for track in tracks:
-        rows.append({
-            "Track": track["name"],
-            "Album": track["album"]["name"],
-            "Popularity": track["popularity"],
-            "Duration (min)": track["duration_ms"] // 60000
-        })
-
-    return pd.DataFrame(rows)
-
-
-def sort_top_tracks_df(df, sort_col="Popularity", ascending=False):
-    """Sort the top tracks DataFrame by a given column."""
-    if sort_col not in {"Track", "Album", "Popularity", "Duration (min)"}:
-        sort_col = "Popularity"  # default
-
-    return df.sort_values(by=sort_col, ascending=ascending, ignore_index=True)
 
 
 def write_top_tracks_excel(df, artist_name):
@@ -163,7 +143,7 @@ def main():
                 "https://api.spotify.com/v1/search",
                 params={"q": query, "type": "artist", "limit": 5}
             )
-            artists = services.parse_artists(raw)
+            artists = api.search_artists(raw)
             data = api.search_artists_raw(query)
 
             if not artists:
@@ -213,14 +193,14 @@ def main():
                     else:
 
                         # 3. Build + sort
-                        df = build_top_tracks_df(match["id"])
+                        df = api.build_top_tracks_df(match["id"])
 
                         raw = input(
                             "Sort top tracks by (popularity/duration/none)? [default: popularity] ").strip().lower()
                         if raw == "duration":
-                            df = sort_top_tracks_df(df, sort_col="Duration (min)", ascending=False)
+                            df = services.build_top_tracks_df(match["id"])
                         elif raw in {"", "popularity"}:
-                            df = sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
+                            df = services.sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
 
                         # 4. Write Excel
                         write_top_tracks_excel(df, match["name"])

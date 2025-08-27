@@ -5,24 +5,6 @@ from spotify_api import SpotifyAPI
 
 api = SpotifyAPI(client_id=client_id, client_secret=client_secret)
 
-def parse_artists(data):
-    if not isinstance(data, dict):
-        raise TypeError("parse_artists expects a dict (raw Spotify JSON).")
-
-    items = (data or {}).get("artists", {}).get("items", [])
-    results = []
-    for artist in items:
-        results.append({
-            "id": artist["id"],
-            "name": artist["name"],
-            "url": artist["external_urls"]["spotify"],
-            "genres": artist.get("genres", []),
-            "followers": int(artist.get("followers", {}).get("total", 0)),
-            "popularity": int(artist.get("popularity", 0))
-        })
-    return results
-
-
 def find_best_artist(api, query: str, limit: int = 5) -> Optional[Dict]:
     """
     Uses SpotifyAPI.search_artists_raw, then picks one artist and
