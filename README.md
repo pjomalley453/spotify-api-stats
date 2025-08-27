@@ -1,7 +1,7 @@
 # Spotify Artist Stats Tool
 
-A small Python app that uses the [Spotify Web API](https://developer.spotify.com/documentation/web-api) to fetch artist data and generate Excel reports.  
-Highlights **API integration**, **Pandas data wrangling**, and **automated PDF reporting (FPDF2)**.
+A small Python app that uses the [Spotify Web API](https://developer.spotify.com/documentation/web-api) to fetch artist data and generate reports.  
+Features **API integration**, **Pandas data wrangling**, and **automated Excel reporting**.
 
 ---
 
