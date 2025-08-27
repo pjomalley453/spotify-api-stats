@@ -169,7 +169,7 @@ def generate_comparison_pdf(searched_artists):
 
 
 # EXCEL FUNCTIONS
-def build_top_tracks_df(artist_id, artist_name):
+def build_top_tracks_df(artist_id):
     top_tracks_url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks"
     response = requests.get(top_tracks_url, headers=headers, params={"market": "US"})
     tracks = response.json()["tracks"]
@@ -192,6 +192,46 @@ def sort_top_tracks_df(df, sort_col="Popularity", ascending=False):
         sort_col = "Popularity"  # default
 
     return df.sort_values(by=sort_col, ascending=ascending, ignore_index=True)
+
+def write_top_tracks_excel(df, artist_name):
+    """Write an artist's top tracks DataFrame to an Excel file with simple formatting."""
+    if df.empty:
+        print("No tracks found.")
+        return
+
+    # File name: replace spaces with underscores
+    safe_name = artist_name.replace(" ", "_")
+    path = f"top_tracks_{safe_name}.xlsx"
+
+    with pd.ExcelWriter(path, engine="xlsxwriter") as xw:
+        df.to_excel(xw, sheet_name="TopTracks", index=False)
+        ws = xw.sheets["TopTracks"]
+
+        # Formats
+        
+
+    # 2) with pd.ExcelWriter(path, engine="xlsxwriter") as xw:
+    #       df.to_excel(xw, sheet_name="TopTracks", index=False)
+    #       ws = xw.sheets["TopTracks"]
+
+    #       # formats
+    #       header_fmt = xw.book.add_format({"bold": True})
+    #       int_fmt    = xw.book.add_format({"num_format": "0"})
+
+    #       # bold header row
+    #       # for col_idx, col_name in enumerate(df.columns): ws.write(0, col_idx, col_name, header_fmt)
+
+    #       # set widths + numeric formats:
+    #       # Track (col 0): width ~30
+    #       # Album (col 1): width ~30
+    #       # Popularity (col 2): width ~11, format int_fmt
+    #       # Duration (min) (col 3): width ~14, format int_fmt
+
+    #       # freeze header + filter
+    #       # ws.freeze_panes(1, 0)
+    #       # ws.autofilter(0, 0, len(df), len(df.columns)-1)
+
+    # 3) print or return saved path
 
 
 def build_comparison_df(searched_artists):
@@ -274,7 +314,7 @@ def main():
 
         # 2. Create report
         elif user_prompt == "report":
-            report_choice = input("Create individual artist report or comparison report?: (1/2)")
+            report_choice = input("Individual or comparison Excel report?: (1/2)")
 
             # Individual artist report
             if report_choice == "1":
@@ -290,7 +330,15 @@ def main():
                     if not match:
                         print("Artist not in saved searches.")
                     else:
-                        artist_track_pdf(match["id"], match["name"])
+
+                        # 3. Build + sort
+                        df = build_top_tracks_df(match["id"])
+                        # df = sort_top_tracks_df(df, sort_col, descending)
+
+                        # 4. Write Excel
+                        write_top_tracks_excel(df, "artist_comparison.xlsx")
+                        print("Saved: artist_comparison.xlsx")
+
 
             # Comparison artist report
             elif report_choice == "2":
@@ -306,10 +354,7 @@ def main():
 
                     # 2. Ask order; default if blank or invalid
                     raw = input("Order asc or desc? [default: desc] ").strip().lower()
-                    if raw not in {"asc", "desc"}:
-                        order = raw
-                    else:
-                        order = "desc"
+                    order = raw if raw in {"asc", "desc"} else "desc"
                     ascending = (order == "asc")
 
                     # 3. Build + sort
