@@ -28,7 +28,9 @@ class SpotifyArtistTool:
 
 
     def _headers(self):
-        pass
+        # Always ensure a fresh token
+        token = self._get_spotify_token()
+        return {"Authorization": f"Bearer {token}"}
 
     def get(self, url, params=None):
         pass
