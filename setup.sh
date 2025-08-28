@@ -23,3 +23,5 @@ fi
 echo "   Setup complete. Next:"
 echo "   source .venv/bin/activate"
 echo "   python main.py"
+
+
