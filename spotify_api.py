@@ -44,13 +44,13 @@ class SpotifyAPI:
 
 
     # Search Artists
-    def search_artists_raw(self, query: str, limit: int = 5):
-        query = (query or "").strip()
-        if not query:
-            return {}
-        url = "https://api.spotify.com/v1/search"
-        params = {"q": query, "type": "artist", "limit": limit}
-        return self.get(url, params=params)
+    # def search_artists_raw(self, query: str, limit: int = 5):
+    #     query = (query or "").strip()
+    #     if not query:
+    #         return {}
+    #     url = "https://api.spotify.com/v1/search"
+    #     params = {"q": query, "type": "artist", "limit": limit}
+    #     return self.get(url, params=params)
 
     def search_artists(self, query: str, limit: int = 5):
         """
