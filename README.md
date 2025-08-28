@@ -18,7 +18,7 @@ cp .env.example .env
 # SPOTIFY_CLIENT_ID=...
 # SPOTIFY_CLIENT_SECRET=...
 
-# 3) One-shot setup (venv + deps)
+# 3) Setup (venv + deps)
 ./setup.sh
 source .venv/bin/activate
 
