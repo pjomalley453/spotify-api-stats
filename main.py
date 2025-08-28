@@ -17,8 +17,8 @@ artists = api.search_artists("four tet", limit=5)
 if artists:
     artist_id = artists[0]["id"]  # take the first result’s ID
     df = services.build_top_tracks_df(api, artist_id)  # build top tracks DataFrame
+    df = services.sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
 
-df = services.sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
 # Example: write excel (your writer function)
 # services.write_top_tracks_excel(df, f"top_tracks_{artist_name}.xlsx")
 
@@ -157,14 +157,14 @@ def main():
                 print("🔗 URL:", artist["url"])
                 print("")
 
-            # Add to saved searches
-            choice1 = input("Add this artist to your saved searches? (y/n): ").lower()
-            if choice1 == "y":
-                if not any(a["id"] == artist["id"] for a in searched_artists):
-                    searched_artists.append(artist)
-                    print(f"{artist["name"]} added to saved searches.\n")
-                else:
-                    print(f"{artist["name"]} is already in your saved searches.\n")
+                # Add to saved searches
+                choice1 = input("Add this artist to your saved searches? (y/n): ").lower()
+                if choice1 == "y":
+                    if not any(a["id"] == artist["id"] for a in searched_artists):
+                        searched_artists.append(artist)
+                        print(f"{artist["name"]} added to saved searches.\n")
+                    else:
+                        print(f"{artist["name"]} is already in your saved searches.\n")
 
         # 2. Create report
         elif user_prompt == "report":
