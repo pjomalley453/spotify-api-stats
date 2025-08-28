@@ -18,6 +18,9 @@ cp .env.example .env
 # SPOTIFY_CLIENT_ID=your_client_id
 # SPOTIFY_CLIENT_SECRET=your_client_secret
 
+# Note: You’ll need to generate your own Spotify API credentials at https://developer.spotify.com/dashboard/.
+# Copy them into .env using the .env.example template.
+
 # 3) Create venv + install dependencies
 ./setup.sh
 
