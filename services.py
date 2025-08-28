@@ -2,7 +2,6 @@ from typing import Optional, Dict
 import pandas as pd
 import re
 
-
 def find_best_artist(api, query: str, limit: int = 5) -> Optional[Dict]:
     """
     Uses SpotifyAPI.search_artists_raw, then picks one artist and

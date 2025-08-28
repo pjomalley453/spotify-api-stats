@@ -76,7 +76,7 @@ class SpotifyAPI:
         url = "https://api.spotify.com/v1/search"
         params = {"q": query, "type": "artist", "limit": int(limit)}
 
-        # Call Spotify (uses your class' token + headers)
+        # Call Spotify (class' tokens and headers)
         data = self.get(url, params=params) or {}
 
         # Parse robustly
