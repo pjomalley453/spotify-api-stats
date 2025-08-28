@@ -2,7 +2,6 @@ from typing import Optional, Dict
 import pandas as pd
 import re
 
-from spotify_api import SpotifyAPI
 
 def find_best_artist(api, query: str, limit: int = 5) -> Optional[Dict]:
     """
@@ -97,6 +96,7 @@ def write_top_tracks_excel(df: pd.DataFrame, artist_name):
     return path
 
 
+# Artist Comparison
 def build_comparison_df(api, searched_artists):
     """Returns pd.DataFrame with columns Artist, Followers, Popularity, Genres."""
     rows = []
@@ -123,7 +123,6 @@ def build_comparison_df(api, searched_artists):
 
     return pd.DataFrame(rows)
 
-
 def sort_comparison_df(df, sort_col="Followers", ascending=False):
     """Sort the DataFrame by Followers or Popularity."""
     if sort_col not in {"Followers", "Popularity"}:
@@ -131,3 +130,47 @@ def sort_comparison_df(df, sort_col="Followers", ascending=False):
 
     df = df.sort_values(by=sort_col, ascending=ascending, ignore_index=True)
     return df
+
+def write_comparison_excel(df: pd.DataFrame, path: str = "artist_comparison.xlsx") -> str:
+    """
+    Write the multi-artist comparison DataFrame to an Excel file with light formatting.
+    Expects columns: Artist, Followers, Popularity, Genres.
+    Returns the path written.
+    """
+    if df is None or df.empty:
+        print("No data to write.")
+        return path
+
+    with pd.ExcelWriter(path, engine="xlsxwriter") as xw:
+        df.to_excel(xw, sheet_name="Comparison", index=False)
+        ws = xw.sheets["Comparison"]
+
+        # Formats
+        header_fmt = xw.book.add_format({"bold": True})
+        num_fmt = xw.book.add_format({"num_format": "#,##0"})  # comma thousands
+
+        # Bold header row
+        for col_idx, col_name in enumerate(df.columns):
+            ws.write(0, col_idx, col_name, header_fmt)
+
+        # Column widths + number format for Followers (if present)
+        cols = list(df.columns)
+        if "Artist" in cols:
+            ws.set_column(cols.index("Artist"), cols.index("Artist"), 22)
+        if "Followers" in cols:
+            idx = cols.index("Followers")
+            ws.set_column(idx, idx, 14, num_fmt)
+        if "Popularity" in cols:
+            idx = cols.index("Popularity")
+            ws.set_column(idx, idx, 11)
+        if "Genres" in cols:
+            idx = cols.index("Genres")
+            ws.set_column(idx, idx, 40)
+
+        # Freeze header row & add filter
+        ws.freeze_panes(1, 0)
+        ws.autofilter(0, 0, len(df), len(df.columns) - 1)
+
+    print(f"Saved: {path}")
+    return path
+

@@ -19,12 +19,9 @@ if artists:
     df = services.build_top_tracks_df(api, artist_id)  # build top tracks DataFrame
     df = services.sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
 
-# Example: write excel (your writer function)
-
 query = "four tet"  # test query
 url = "https://api.spotify.com/v1/search"
 params = {"q": query, "type": "artist", "limit": 5}  # parsed list of dicts
-
 
 # MAIN LOOP
 def main():
@@ -123,7 +120,7 @@ def main():
 
                     # 3. Build + sort
                     df = services.build_comparison_df(api, searched_artists)  # Followers/Popularity must be ints
-                    df = services.sort_comparison_df(df, sort_col, ascending)
+                    df = services.sort_comparison_df(df, sort_col=sort_col, ascending=ascending)
 
                     # 4. Write Excel
                     services.write_comparison_excel(df, "artist_comparison.xlsx")
