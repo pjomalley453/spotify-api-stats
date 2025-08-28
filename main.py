@@ -12,21 +12,19 @@ client_secret = os.environ["SPOTIFY_CLIENT_SECRET"]
 
 api = SpotifyAPI(client_id, client_secret)
 
-artists = api.search_artists("four tet", limit=1)   # search for an artist
+artists = api.search_artists("four tet", limit=5)
+
 if artists:
     artist_id = artists[0]["id"]  # take the first result’s ID
-    df = services.build_top_tracks_df(artist_id)  # build top tracks DataFrame
+    df = services.build_top_tracks_df(api, artist_id)  # build top tracks DataFrame
 
 df = services.sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
 # Example: write excel (your writer function)
-services.write_top_tracks_excel(df, f"top_tracks_{artist_name}.xlsx")
+# services.write_top_tracks_excel(df, f"top_tracks_{artist_name}.xlsx")
 
 query = "four tet"  # test query
 url = "https://api.spotify.com/v1/search"
-params = {"q": query, "type": "artist", "limit": 5}
-
-raw = api.get(url, params=params)      # raw JSON from Spotify
-artists = api.search_artists(raw)  # parsed list of dicts
+params = {"q": query, "type": "artist", "limit": 5}  # parsed list of dicts
 
 
 # TOP TRACKS EXCEL FUNCTIONS
@@ -140,12 +138,7 @@ def main():
         # 1. Search for artist
         if user_prompt == "search":
             query = input("Enter an artist name: ").strip()
-            raw = api.get(
-                "https://api.spotify.com/v1/search",
-                params={"q": query, "type": "artist", "limit": 5}
-            )
-            artists = api.search_artists(raw)
-            data = api.search_artists_raw(query)
+            artists = api.search_artists(query, limit=5)
 
             if not artists:
                 print("No match found, try again. \n")
@@ -194,12 +187,12 @@ def main():
                     else:
 
                         # 3. Build + sort
-                        df = services.build_top_tracks_df(match["id"])
+                        df = services.build_top_tracks_df(api, match["id"])
 
                         raw = input(
                             "Sort top tracks by (popularity/duration/none)? [default: popularity] ").strip().lower()
                         if raw == "duration":
-                            df = services.build_top_tracks_df(match["id"])
+                            df = services.build_top_tracks_df(api, match["id"])
                         elif raw in {"", "popularity"}:
                             df = services.sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
 
