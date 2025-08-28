@@ -1,5 +1,7 @@
 from typing import Optional, Dict
 import pandas as pd
+import re
+
 from spotify_api import SpotifyAPI
 
 def find_best_artist(api, query: str, limit: int = 5) -> Optional[Dict]:
@@ -57,3 +59,41 @@ def sort_top_tracks_df(df: pd.DataFrame, sort_col: str = "Popularity", ascending
     if sort_col not in allowed:
         sort_col = "Popularity"
     return df.sort_values(by=sort_col, ascending=ascending, ignore_index=True)
+
+def write_top_tracks_excel(df: pd.DataFrame, artist_name):
+    """Write an artist's top tracks DataFrame to an Excel file with simple formatting."""
+    if df.empty:
+        print("No tracks found.")
+        return
+
+    # File name: replace spaces with underscores
+    safe_name = re.sub(r'[^A-Za-z0-9._-]+', "_", artist_name).strip("_")
+    path = f"top_tracks_{safe_name}.xlsx"
+
+
+    with pd.ExcelWriter(path, engine="xlsxwriter") as xw:
+        df.to_excel(xw, sheet_name="TopTracks", index=False)
+        ws = xw.sheets["TopTracks"]
+
+        # Formats
+        header_fmt = xw.book.add_format({"bold": True})
+        int_fmt = xw.book.add_format({"num_format": "0"})
+
+        # Bold header row
+        for col_idx, col_name in enumerate(df.columns):
+            ws.write(0, col_idx, col_name, header_fmt)
+
+        # Set reasonable column widths + formats
+        ws.set_column(0, 0, 30)  # Track
+        ws.set_column(1, 1, 30)  # Album
+        ws.set_column(2, 2, 11, int_fmt)  # Popularity
+        ws.set_column(3, 3, 14, int_fmt)  # Duration (min)
+
+        # Freeze header row & add filter
+        ws.freeze_panes(1, 0)
+        ws.autofilter(0, 0, len(df), len(df.columns) - 1)
+
+    print(f"Saved: {path}")
+    return path
+
+

@@ -20,111 +20,19 @@ if artists:
     df = services.sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
 
 # Example: write excel (your writer function)
-# services.write_top_tracks_excel(df, f"top_tracks_{artist_name}.xlsx")
 
 query = "four tet"  # test query
 url = "https://api.spotify.com/v1/search"
 params = {"q": query, "type": "artist", "limit": 5}  # parsed list of dicts
 
 
-# TOP TRACKS EXCEL FUNCTIONS
-
-
-def write_top_tracks_excel(df, artist_name):
-    """Write an artist's top tracks DataFrame to an Excel file with simple formatting."""
-    if df.empty:
-        print("No tracks found.")
-        return
-
-    # File name: replace spaces with underscores
-    safe_name = artist_name.replace(" ", "_")
-    path = f"top_tracks_{safe_name}.xlsx"
-
-    with pd.ExcelWriter(path, engine="xlsxwriter") as xw:
-        df.to_excel(xw, sheet_name="TopTracks", index=False)
-        ws = xw.sheets["TopTracks"]
-
-        # Formats
-        header_fmt = xw.book.add_format({"bold": True})
-        int_fmt = xw.book.add_format({"num_format": "0"})
-
-        # Bold header row
-        for col_idx, col_name in enumerate(df.columns):
-            ws.write(0, col_idx, col_name, header_fmt)
-
-        # Set reasonable column widths + formats
-        ws.set_column(0, 0, 30)  # Track
-        ws.set_column(1, 1, 30)  # Album
-        ws.set_column(2, 2, 11, int_fmt)  # Popularity
-        ws.set_column(3, 3, 14, int_fmt)  # Duration (min)
-
-        # Freeze header row & add filter
-        ws.freeze_panes(1, 0)
-        ws.autofilter(0, 0, len(df), len(df.columns) - 1)
-
-    print(f"Saved: {path}")
 
 
 # COMPARISON EXCEL FUNCTIONS
-def build_comparison_df(searched_artists):
-    """Returns pd.DataFrame with columns Artist, Followers, Popularity, Genres."""
-    rows = []
-    for a in searched_artists:
-        artist_id = a["id"]
-
-        # Call Spotify API for artist profile
-        url = f"https://api.spotify.com/v1/artists/{artist_id}"
-        data = api.get(url)
-
-        # Extract fields
-        name = data["name"]
-        followers = int(data["followers"]["total"])
-        popularity = int(data["popularity"])
-        genres_list = data.get("genres", [])
-
-        # Build rows
-        rows.append({
-            "Artist": name,
-            "Followers": followers,
-            "Popularity": popularity,
-            "Genres": ", ".join(g.title() for g in genres_list) if genres_list else "N/A"
-        })
-    return pd.DataFrame(rows)
 
 
-def sort_comparison_df(df, sort_col="Followers", ascending=False):
-    """Sort the DataFrame by Followers or Popularity."""
-    if sort_col not in {"Followers", "Popularity"}:
-        sort_col = "Followers"
-
-    df = df.sort_values(by=sort_col, ascending=ascending, ignore_index=True)
-    return df
 
 
-def write_comparison_excel(df, path="artist_comparison.xlsx"):
-    with pd.ExcelWriter(path, engine="xlsxwriter") as xw:
-        df.to_excel(xw, sheet_name="Comparison", index=False)
-        ws = xw.sheets["Comparison"]
-
-        # Create formats
-        header_fmt = xw.book.add_format({"bold": True})
-        num_fmt = xw.book.add_format({"num_format": "#,##0"})
-
-        # Apply header format (row 0)
-        for col_idx, col_name in enumerate(df.columns): ws.write(0, col_idx, col_name, header_fmt)
-
-        # Apply number format to Followers column (find its index)
-        followers_col = list(df.columns).index("Followers")
-        ws.set_column(followers_col, followers_col, 14, num_fmt)
-
-        # Reasonable widths for other columns
-        ws.set_column(0, 0, 22)  # Artist
-        ws.set_column(2, 2, 11)  # Popularity
-        ws.set_column(3, 3, 40)  # Genres
-
-        # Freeze header row & add filter
-        ws.freeze_panes(1, 0)
-        ws.autofilter(0, 0, len(df), len(df.columns)-1)
 
 
 # MAIN LOOP
@@ -185,19 +93,23 @@ def main():
                     if not match:
                         print("Artist not in saved searches.")
                     else:
-
                         # 3. Build + sort
-                        df = services.build_top_tracks_df(api, match["id"])
+                        services.build_top_tracks_df(api, match["id"])
+
+                        df_raw = services.build_top_tracks_df(api, match["id"])
 
                         raw = input(
                             "Sort top tracks by (popularity/duration/none)? [default: popularity] ").strip().lower()
+
                         if raw == "duration":
-                            df = services.build_top_tracks_df(api, match["id"])
+                            df = services.build_top_tracks_df(df_raw, match["id"])
                         elif raw in {"", "popularity"}:
-                            df = services.sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
+                            df = services.sort_top_tracks_df(df_raw, sort_col="Popularity", ascending=False)
+                        else:
+                            df = df_raw
 
                         # 4. Write Excel
-                        write_top_tracks_excel(df, match["name"])
+                        services.write_top_tracks_excel(df, match["name"])
 
             # Comparison artist report
             elif report_choice == "2":
