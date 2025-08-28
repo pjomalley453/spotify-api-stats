@@ -97,3 +97,37 @@ def write_top_tracks_excel(df: pd.DataFrame, artist_name):
     return path
 
 
+def build_comparison_df(api, searched_artists):
+    """Returns pd.DataFrame with columns Artist, Followers, Popularity, Genres."""
+    rows = []
+    for a in searched_artists:
+        artist_id = a["id"]
+
+        # Call Spotify API for artist profile
+        url = f"https://api.spotify.com/v1/artists/{artist_id}"
+        data = api.get(url) or {}
+
+        # Extract fields
+        name = data.get("name", "Unknown")
+        followers = int(data.get("followers", {}).get("total", 0))
+        popularity = int(data.get("popularity", 0))
+        genres_list = data.get("genres", []) or []
+
+        # Build rows
+        rows.append({
+            "Artist": name,
+            "Followers": followers,
+            "Popularity": popularity,
+            "Genres": ", ".join(g.title() for g in genres_list) if genres_list else "N/A"
+        })
+
+    return pd.DataFrame(rows)
+
+
+def sort_comparison_df(df, sort_col="Followers", ascending=False):
+    """Sort the DataFrame by Followers or Popularity."""
+    if sort_col not in {"Followers", "Popularity"}:
+        sort_col = "Followers"
+
+    df = df.sort_values(by=sort_col, ascending=ascending, ignore_index=True)
+    return df

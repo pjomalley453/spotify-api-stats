@@ -26,15 +26,6 @@ url = "https://api.spotify.com/v1/search"
 params = {"q": query, "type": "artist", "limit": 5}  # parsed list of dicts
 
 
-
-
-# COMPARISON EXCEL FUNCTIONS
-
-
-
-
-
-
 # MAIN LOOP
 def main():
     searched_artists = []
@@ -131,11 +122,11 @@ def main():
                     ascending = (order == "asc")
 
                     # 3. Build + sort
-                    df = build_comparison_df(searched_artists)  # Followers/Popularity must be ints
-                    df = sort_comparison_df(df, sort_col, ascending)
+                    df = services.build_comparison_df(api, searched_artists)  # Followers/Popularity must be ints
+                    df = services.sort_comparison_df(df, sort_col, ascending)
 
                     # 4. Write Excel
-                    write_comparison_excel(df, "artist_comparison.xlsx")
+                    services.write_comparison_excel(df, "artist_comparison.xlsx")
                     print("")
                     print("Saved: artist_comparison.xlsx")
 
