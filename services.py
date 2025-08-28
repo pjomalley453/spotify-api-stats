@@ -8,6 +8,10 @@ def find_best_artist(api, query: str, limit: int = 5) -> Optional[Dict]:
     returns a tidy dict: {id, name, followers, popularity, genres, url}.
     Returns None if no results.
     """
+    q = (query or "").strip()
+    if not q:
+        return None
+
     data = api.search_artists_raw(query, limit=limit)
     items = (data or {}).get("artists", {}).get("items", [])
     if not items:
@@ -26,6 +30,8 @@ def find_best_artist(api, query: str, limit: int = 5) -> Optional[Dict]:
         "url": artist.get("external_urls", {}).get("spotify", "")
     }
 
+
+# Top Tracks (Per Artist)
 def build_top_tracks_df(api, artist_id: str, market: str = "US"):
     if not artist_id:
         if not artist_id:

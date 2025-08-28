@@ -15,7 +15,7 @@ api = SpotifyAPI(client_id, client_secret)
 artists = api.search_artists("four tet", limit=1)   # search for an artist
 if artists:
     artist_id = artists[0]["id"]  # take the first result’s ID
-    df = api.build_top_tracks_df(artist_id)  # build top tracks DataFrame
+    df = services.build_top_tracks_df(artist_id)  # build top tracks DataFrame
 
 df = services.sort_top_tracks_df(df, sort_col="Popularity", ascending=False)
 # Example: write excel (your writer function)
@@ -30,7 +30,6 @@ artists = api.search_artists(raw)  # parsed list of dicts
 
 
 # TOP TRACKS EXCEL FUNCTIONS
-
 
 
 def write_top_tracks_excel(df, artist_name):
@@ -195,7 +194,7 @@ def main():
                     else:
 
                         # 3. Build + sort
-                        df = api.build_top_tracks_df(match["id"])
+                        df = services.build_top_tracks_df(match["id"])
 
                         raw = input(
                             "Sort top tracks by (popularity/duration/none)? [default: popularity] ").strip().lower()

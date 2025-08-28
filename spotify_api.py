@@ -43,6 +43,7 @@ class SpotifyAPI:
         resp.raise_for_status()
         return resp.json()
 
+
     # Search Artists
     def search_artists_raw(self, query: str, limit: int = 5):
         query = (query or "").strip()
@@ -93,6 +94,7 @@ class SpotifyAPI:
             })
         return results
 
+
     # Top Tracks
     def get_artist_top_tracks(self, artist_id: str, market: str = "US") -> dict:
         """Low-level call: return raw JSON for an artist's top tracks. No pandas here—just HTTP."""
@@ -104,20 +106,4 @@ class SpotifyAPI:
         data = self.get(url, params={"market": market})
         # Ensure we always return a dict with a 'tracks' key
         return data if isinstance(data, dict) else {"tracks": []}
-
-    def build_top_tracks_df(self, artist_id):
-        url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks"
-        data = self.get(url, params={"market": "US"})
-        tracks = data["tracks"]
-
-        rows = []
-        for track in tracks:
-            rows.append({
-                "Track": track["name"],
-                "Album": track["album"]["name"],
-                "Popularity": track["popularity"],
-                "Duration (min)": track["duration_ms"] // 60000
-            })
-
-        return pd.DataFrame(rows)
 
