@@ -1,5 +1,4 @@
 import os
-import pandas as pd
 from dotenv import load_dotenv
 
 from spotify_api import SpotifyAPI
@@ -7,10 +6,8 @@ import services
 
 # Load secrets
 load_dotenv()
-client_id = os.environ["SPOTIFY_CLIENT_ID"]
-client_secret = os.environ["SPOTIFY_CLIENT_SECRET"]
 
-api = SpotifyAPI(client_id, client_secret)
+api = SpotifyAPI(os.environ["SPOTIFY_CLIENT_ID"], os.environ["SPOTIFY_CLIENT_SECRET"])
 
 artists = api.search_artists("four tet", limit=5)
 
@@ -84,13 +81,15 @@ def main():
                         # 3. Build + sort
                         services.build_top_tracks_df(api, match["id"])
 
+                        # Build raw DF
                         df_raw = services.build_top_tracks_df(api, match["id"])
 
                         raw = input(
                             "Sort top tracks by (popularity/duration/none)? [default: popularity] ").strip().lower()
 
+                        # Produce final DF based on choice
                         if raw == "duration":
-                            df = services.build_top_tracks_df(df_raw, match["id"])
+                            df = services.sort_top_tracks_df(df_raw, sort_col="Duration (min)", ascending=False)
                         elif raw in {"", "popularity"}:
                             df = services.sort_top_tracks_df(df_raw, sort_col="Popularity", ascending=False)
                         else:

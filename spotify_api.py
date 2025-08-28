@@ -1,5 +1,4 @@
 import requests, time
-import pandas as pd
 
 class SpotifyAPI:
     def __init__(self, client_id, client_secret):
