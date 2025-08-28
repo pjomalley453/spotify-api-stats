@@ -27,7 +27,7 @@ source .venv/bin/activate
 # Windows (PowerShell):
 .venv\Scripts\activate
 
-# 5) Install in editable mode (so spotify_tool is importable anywhere)
+# 5) Install
 pip install -e .
 
 # 6) Run
