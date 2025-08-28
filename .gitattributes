@@ -1,2 +1,56 @@
-# Auto detect text files and perform LF normalization
+# --- Core: normalize line endings for text files ---
 * text=auto
+
+# Python & text files: always LF in repo
+*.py   text eol=lf
+*.pyi  text eol=lf
+*.toml text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.csv  text eol=lf
+*.tsv  text eol=lf
+*.txt  text eol=lf
+*.ini  text eol=lf
+*.cfg  text eol=lf
+.env*  text eol=lf
+
+# Shell scripts should use LF (so they stay executable on *nix)
+*.sh text eol=lf
+
+# Windows batch files can keep CRLF locally if needed
+*.bat text eol=crlf
+
+# Treat these as binary (no line-ending changes, no text diffs)
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.zip  binary
+*.rar  binary
+*.7z   binary
+*.exe  binary
+*.dll  binary
+*.so   binary
+*.dylib binary
+
+# Office/Spreadsheet files are binary
+*.xls  binary
+*.xlsx binary
+*.xlsm binary
+*.ods  binary
+*.ppt  binary
+*.pptx binary
+*.doc  binary
+*.docx binary
+
+# Jupyter notebooks: treat as binary to avoid noisy diffs
+*.ipynb binary
+
+# Mac / IDE misc
+.DS_Store binary
+.idea/**  text eol=lf
+.vscode/** text eol=lf

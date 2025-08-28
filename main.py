@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
 
-from spotify_api import SpotifyAPI
-import services
+from spotify_tool import SpotifyAPI
+from spotify_tool import services
 
 # Load secrets
 load_dotenv()
