@@ -55,9 +55,9 @@ def main():
                 if choice1 == "y":
                     if not any(a["id"] == artist["id"] for a in searched_artists):
                         searched_artists.append(artist)
-                        print(f"{artist["name"]} added to saved searches.\n")
+                        print(f"{artist['name']} added to saved searches.\n")
                     else:
-                        print(f"{artist["name"]} is already in your saved searches.\n")
+                        print(f"{artist['name']} is already in your saved searches.\n")
 
         # 2. Create report
         elif user_prompt == "report":
