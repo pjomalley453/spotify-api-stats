@@ -9,7 +9,7 @@ Features **API integration**, **Pandas data wrangling**, and **automated Excel r
 
 ```bash
 # 1) Clone
-git clone https://github.com/<you>/spotify-api-stats.git
+git clone https://github.com/pjomalley453/spotify-api-stats.git
 cd spotify-api-stats
 
 # 2) Env vars
